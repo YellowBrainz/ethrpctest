@@ -1,27 +1,59 @@
-var Web3 = require('web3');
+var web3_extended = require('web3_extended');
+var Promise = require('bluebird');
+var fs = require('fs');
+ 
+var options = {
+  host: 'http://127.0.0.1:8545',
+  ipc:true,
+  personal: true, 
+  admin: true,
+  debug: false
+};
+var web3 = web3_extended.create(options);
+ 
+var datadir = web3.admin.datadir();
+console.log("Datadir = " + datadir);
 
-if (typeof web3 !== 'undefined') {
-  web3 = new Web3(web3.currentProvider);
-} else {
-  // set the provider you want from Web3.providers
-  web3 = new Web3(new Web3.providers.HttpProvider("http://127.0.0.1:8545"));
+// Unlock the coinbase account to make transactions out of it
+console.log("Unlocking account : " + web3.eth.accounts[0]);
+var password = process.env.ENV_PASSWD;
+var coinbase = web3.eth.accounts[0];
+
+try {
+  var lock_result = web3.personal.unlockAccount(coinbase, password, 0)
+} catch(e) {
+  console.log(e);
+  return;
 }
 
-web3.eth.getBlock(48, function(error, result){
-    if(!error)
-        console.log(result)
-    else
-        console.error(error);
-})
+let source = fs.readFileSync("greeter.json");
+let contracts = JSON.parse(source)["contracts"];
+let abi = JSON.parse(contracts['greeter.sol:greeter'].abi);
+let code = '0x' + contracts['greeter.sol:greeter'].bin;
 
-var batch = new web3.BatchRequest();
-batch.add(web3.eth.getBalance.request('0x0000000000000000000000000000000000000000', 'latest', callback));
-batch.execute();
+/*
+web3.eth.getAccounts()
+  .then(function(accounts) {
 
-function callback(){
-	console.log("callback called");
+  console.log(accounts[0]);
+  console.log("");
+  
+  web3.eth.getBalance(accounts[0])
+    .then(function(acctBal) {
+      console.log("balance: " + acctBal/1000000000000000000 + " Ether");
+      //console.log(web3.fromWei(acctBal,"ether"));
+    });
+});
+*/
+
+/*
+// At the end close the account now that we are done
+console.log("Locking account : " + web3.eth.accounts[0]);
+
+try {
+	web3.personal.lockAccount(web3.eth.accounts[0]);
+} catch(e) {
+	console.log(e);
+	return;
 }
-
-function callback2(){
-	console.log("callback2 called");
-}
+*/

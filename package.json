@@ -9,7 +9,9 @@
   "author": "Toon Leijtens",
   "license": "MIT",
   "dependencies": {
-    "web3": "^1.0.0-beta.18"
+    "bluebird": "^3.5.0",
+    "fs": "0.0.1-security",
+    "web3_extended": "^1.0.0"
   },
   "devDependencies": {},
   "repository": {
